@@ -10,7 +10,6 @@
   export let handleRequest;
   export let gweiToEth;
 
-  $: paidCustomer = faucetInfo.paid_customer;
 
   const openMessageWindow = (subject, email) => {
     const emailSupport = 'support+presto@gateway.fm';
@@ -41,35 +40,8 @@
               </span>
             </a>
             <div class="navbar-desktop">
-              {#if !paidCustomer}
-                <Navigation />
-              {/if}
+             sssssssssssssssssss
             </div>
-          </div>
-          <div>
-            <div class="navbar-end">
-              {#if !paidCustomer}
-                <a
-                  class="navbar-desktop"
-                  href="https://presto.gateway.fm/onboarding"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <button class="button is-primary is-rounded">
-                    Deploy rollup <img
-                      src={arrowRight}
-                      class="icon arrow-right"
-                      alt="arrow"
-                    />
-                  </button></a
-                >
-              {/if}
-            </div>
-          </div>
-          <div class="navbar-mobile">
-            {#if !paidCustomer}
-              <Navigation />
-            {/if}
           </div>
         </div>
       </nav>
@@ -116,53 +88,10 @@
                 >
                   Request
                 </button>
-                {#if !paidCustomer}
-                  <div class="box-offer">
-                    Claim 1 {faucetInfo.symbol} test token for development.<br
-                    />
-                    If you need additional tokens for extensive testing, please
-                    <!-- svelte-ignore a11y-invalid-attribute -->
-                    <a
-                      class="link"
-                      href="#"
-                      role="button"
-                      on:click={() =>
-                        openMessageWindow('Additional tokens request')}
-                    >
-                      contact support
-                    </a>
-                  </div>
-                {/if}
               </div>
             </div>
           </div>
-          {#if !paidCustomer}
-            <div class="deploy-btn-mobile">
-              <a
-                class="deploy-link-mobile"
-                href="https://presto.gateway.fm/onboarding"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <button class="button is-primary is-rounded">
-                  Deploy rollup <img
-                    src={arrowRight}
-                    class="icon arrow-right"
-                    alt="arrow"
-                  />
-                </button></a
-              >
-            </div>
-          {/if}
-          {#if !paidCustomer}
-            <div class="box-logo">
-              Powered by <a
-                class="navbar-item"
-                href="https://gateway.fm/"
-                target="_blank"><img src={logo} alt="Gatewayfm" /></a
-              >
-            </div>
-          {/if}
+          
         </div>
       </div>
     </div>
@@ -206,12 +135,12 @@
     font-size: 14px;
     font-weight: 500;
     padding: 8px 12px;
-    background-color: #dcf0fd;
+    background-color: #39bc9f;
     border-radius: 8px;
     color: #183053;
   }
   .link {
-    color: #8950fa !important;
+    color: #f3cd52 !important;
     text-decoration: underline;
     cursor: pointer;
   }
@@ -221,7 +150,7 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    background-color: #8950fa;
+    background-color: #f3cd52;
     gap: 16px;
   }
 
@@ -240,7 +169,8 @@
     align-items: center;
     padding: 8px 12px;
     border-radius: 8px;
-    background-color: #eee8ff;
+    background-color: #39bc9f42;
+    color: #6a6a6a;
   }
   .field {
     display: flex;
@@ -249,7 +179,7 @@
   }
 
   .gas-token {
-    color: #8950fa;
+    color: #f3cd52;
   }
 
   .card {
@@ -280,6 +210,9 @@
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
+  }
+  .hero.is-info .title {
+    color: #000;
   }
 
   .subtitle {
@@ -313,7 +246,7 @@
   }
 
   .navbar-item {
-    color: #8950fa !important;
+    color: #f3cd52 !important;
   }
   .navbar-item:hover {
     background-color: transparent !important;
@@ -326,7 +259,13 @@
   }
 
   .icon-brand {
-    width: 8rem;
+    width: auto;
+    height: 40px;
+  }
+
+  .icon-brand img {
+    height: 100%;
+    width: auto;
   }
 
   @media (max-width: 992px) {

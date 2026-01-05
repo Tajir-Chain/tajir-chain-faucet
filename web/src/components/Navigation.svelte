@@ -28,18 +28,7 @@
 <div class="navbar-container" bind:this={navbarRef}>
   <button class="burger-menu" on:click={() => (isOpen = !isOpen)}> ☰ </button>
 
-  <nav class="navbar" class:open={isOpen}>
-    {#each navigationList as { title, url }}
-      <a
-        class="navbar-item"
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {title}
-      </a>
-    {/each}
-  </nav>
+ 
 </div>
 
 <style>
@@ -68,14 +57,14 @@
   }
 
   .navbar-item:hover {
-    color: #8950fa !important;
+    color: #f3cd52 !important;
     background-color: transparent !important;
   }
 
   @media (max-width: 768px) {
     .burger-menu {
       display: block;
-      color: #8950fa;
+      color: #f3cd52;
     }
 
     .navbar {

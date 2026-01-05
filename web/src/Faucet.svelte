@@ -102,7 +102,6 @@
       toast({ message: 'input required', type: 'is-warning' });
       return;
     }
-
     if (address.endsWith('.eth')) {
       try {
         const provider = new CloudflareProvider();
