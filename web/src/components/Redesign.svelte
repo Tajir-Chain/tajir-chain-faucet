@@ -22,38 +22,30 @@
     const textarea = event.target;
     textarea.style.height = 'auto'; // Reset height
     textarea.style.height = `${textarea.scrollHeight}px`; // Set new height
+    textarea.style.borderRadius = '12px'
   }
 </script>
 
 <main>
   <section
-    class="hero is-info is-fullheight"
-    style="background-image: url({faucetInfo.background_url})"
+    class="hero  is-fullheight faucet-bg"
   >
-    <div class="hero-head">
-      <nav class="navbar">
-        <div class="header-container">
-          <div class="navbar-brand">
-            <a class="navbar-item" href="https://gateway.fm/">
-              <span class="icon icon-brand">
-                <img src={faucetInfo.logo_url} alt="logo" />
-              </span>
-            </a>
-            <div class="navbar-desktop">
-             sssssssssssssssssss
-            </div>
-          </div>
-        </div>
-      </nav>
+     <nav class="navbar">
+  <div class="header-container">
+    <div class="navbar-brand">
+      <a  href="https://gateway.fm/">
+        <span class="icon icon-brand">
+          <img src={faucetInfo.logo_url} alt="logo"/>
+        </span>
+      </a>
     </div>
+  </div>
+</nav>
+
 
     <div class="hero-body">
       <div class="container has-text-centered">
         <div class="column is-7 is-offset-3 centered-column">
-          <div class="network">
-            <img src={networkIcon} alt="logo" />
-            <div>{faucetInfo.network}</div>
-          </div>
           <div class="title">
             Receive <div class="gas-token">
               {gweiToEth(faucetInfo.payout)}
@@ -64,7 +56,7 @@
           <div class="card">
             <div>
               <div class="subtitle">
-                <div>Serving from</div>
+                <div>Enter Your Address</div>
                 <div class="address-from">
                   {faucetInfo.account}
                   <CopyButton text={faucetInfo.account} />
@@ -99,12 +91,98 @@
 </main>
 
 <style>
+
+/* ===== BIG Gradient Circles Background ===== */
+.faucet-bg {
+  position: relative;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.faucet-bg::before,
+.faucet-bg::after {
+  content: "";
+  position: absolute;
+  width: 900px;
+  height: 900px;
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Top Right – LARGE */
+.faucet-bg::before {
+  top: -420px;
+  right: -420px;
+  background: radial-gradient(
+    circle,
+    rgba(57, 188, 159, 0.45) 0%,
+    rgba(57, 188, 159, 0.22) 45%,
+    rgba(57, 188, 159, 0) 75%
+  );
+}
+
+/* Bottom Left – LARGE */
+.faucet-bg::after {
+  bottom: -460px;
+  left: -460px;
+  background: radial-gradient(
+    circle,
+    rgba(57, 188, 159, 0.45) 0%,
+    rgba(57, 188, 159, 0.22) 45%,
+    rgba(57, 188, 159, 0) 75%
+  );
+}
+
+/* Keep content above gradients */
+.faucet-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Mobile tuning */
+@media (max-width: 768px) {
+  .faucet-bg::before,
+  .faucet-bg::after {
+    width: 620px;
+    height: 620px;
+  }
+
+  .faucet-bg::before {
+    top: -300px;
+    right: -300px;
+  }
+
+  .faucet-bg::after {
+    bottom: -320px;
+    left: -320px;
+  }
+}
+
+
+.navbar {
+  justify-content: center;
+}
+
+.header-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.navbar-brand {
+  margin: 0 auto;
+}
   .deploy-btn-mobile {
     display: none;
   }
   .input {
     resize: none;
     overflow: hidden;
+    background: #F7F7F7;
+    color: black
+    border-radius: 12px !important;
+    min-height: 42px;
   }
   .header-container {
     display: flex;
@@ -150,8 +228,11 @@
     justify-content: center;
     align-items: center;
     width: 100%;
-    background-color: #f3cd52;
+    background-color: #F3CD52;
     gap: 16px;
+    border-radius: 12px !important;
+    color: black;
+    min-height: 56px;
   }
 
   .button:hover {
@@ -169,8 +250,7 @@
     align-items: center;
     padding: 8px 12px;
     border-radius: 8px;
-    background-color: #39bc9f42;
-    color: #6a6a6a;
+    background-color: #F7F7F7;
   }
   .field {
     display: flex;
@@ -185,20 +265,20 @@
   .card {
     display: flex;
     flex-direction: column;
-    min-width: 100%;
-    gap: 24px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
-    border-radius: 19px;
+    min-width: 638px;
+    max-width: 638px;
+    gap: 6px;
+    box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
     padding: 32px;
-    color: #161718;
   }
 
   .title {
     display: inline-flex;
-    color: #161718;
+    color: #1F1F37;
     gap: 8px;
     font-weight: 500;
-    font-size: 72px; /* Adjust size as needed */
+    font-size: 44px; /* Adjust size as needed */
     line-height: 80px;
     letter-spacing: 0px;
   }
@@ -218,7 +298,7 @@
   .subtitle {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0px;
@@ -254,18 +334,13 @@
   }
 
   .icon {
-    width: 16px;
-    height: 16px;
+    width: 243px;
+    height: 62px;
   }
 
   .icon-brand {
     width: auto;
-    height: 40px;
-  }
-
-  .icon-brand img {
-    height: 100%;
-    width: auto;
+    height: 62px;
   }
 
   @media (max-width: 992px) {

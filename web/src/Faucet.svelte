@@ -17,7 +17,7 @@
     payout: 1000000000,
     symbol: 'ETH',
     hcaptcha_sitekey: '',
-    logo_url: '/gatewayfm-logo.svg',
+    logo_url: '/logo.svg',
     background_url: 'background.jpg',
     frontend_type: 'redesign',
     paid_customer: false,
