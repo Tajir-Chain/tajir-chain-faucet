@@ -9,6 +9,27 @@ This guide explains how to run the project for development with Hot Module Repla
 - **Node.js**: Version 18+ (verified with v22)
 - **Yarn**: (`npm install -g yarn`)
 
+### WSL Go Installation (Windows Users)
+If you are developing on Windows, it is recommended to use WSL (Ubuntu). Follow these steps to install Go:
+
+1. **Download Go**:
+   ```bash
+   wget https://go.dev/dl/go1.23.4.linux-amd64.tar.gz
+   ```
+2. **Install Go**:
+   ```bash
+   sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.23.4.linux-amd64.tar.gz
+   ```
+3. **Set Environment Variables**:
+   Add these to your `~/.bashrc`:
+   ```bash
+   export PATH=$PATH:/usr/local/go/bin
+   export GOPATH=$HOME/go
+   export PATH=$PATH:$GOPATH/bin
+   ```
+   Then run `source ~/.bashrc`.
+4. **Verify**: Run `go version`.
+
 ## Setup
 
 1. **Install Frontend Dependencies**:
