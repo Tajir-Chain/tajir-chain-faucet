@@ -261,7 +261,8 @@
   .card {
     display: flex;
     flex-direction: column;
-    min-width: 638px;
+    width: 100%;
+    min-width: unset;
     max-width: 638px;
     gap: 6px;
     box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.1);
@@ -270,13 +271,16 @@
   }
 
   .title {
-    display: inline-flex;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     color: #1F1F37;
     gap: 8px;
     font-weight: 600;
     font-size: 44px; /* Adjust size as needed */
-    line-height: 80px;
+    line-height: 1.2;
     letter-spacing: 0px;
+    margin-bottom: 2rem;
   }
   .hero.is-info {
     background:
@@ -344,16 +348,29 @@
   }
 
   @media (max-width: 768px) {
+    .card {
+      padding: 24px 16px;
+    }
+
     .subtitle {
       flex-direction: column;
+      align-items: center;
+      text-align: center;
       font-size: 16px;
-      gap: 8px;
+      gap: 12px;
+    }
+
+    .address-from {
+      width: 100%;
+      justify-content: center;
     }
 
     .title {
-      font-size: 44px;
-      line-height: 100%;
+      font-size: 40px;
+      line-height: 1.1;
       font-weight: 600;
+      flex-direction: column;
+      gap: 0;
     }
     .navbar-desktop {
       display: none;
@@ -363,7 +380,7 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 1rem 1.5rem;
+      padding: 2rem 1rem;
     }
     .deploy-link-mobile {
       display: flex;
