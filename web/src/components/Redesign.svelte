@@ -1,47 +1,35 @@
 <script>
   import CopyButton from './CopyButton.svelte';
-  import Navigation from './Navigation.svelte';
-  import networkIcon from './../assets/networkIcon.svg';
-  import arrowRight from './../assets/arrowRight.svg';
-  import logo from './../assets/logo.svg';
-
   export let faucetInfo;
   export let input;
   export let handleRequest;
   export let gweiToEth;
 
-
-  const openMessageWindow = (subject, email) => {
-    const emailSupport = 'support+presto@gateway.fm';
-    const mailtoLink = `mailto:${emailSupport}?subject=${encodeURIComponent(subject)}`;
-
-    window.location.href = mailtoLink;
-  };
-
   function autoResize(event) {
     const textarea = event.target;
     textarea.style.height = 'auto'; // Reset height
     textarea.style.height = `${textarea.scrollHeight}px`; // Set new height
-    textarea.style.borderRadius = '12px'
+    textarea.style.borderRadius = '12px';
   }
+  const shortenAddress = (address) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
 </script>
 
 <main>
-  <section
-    class="hero  is-fullheight faucet-bg"
-  >
-     <nav class="navbar">
-  <div class="header-container">
-    <div class="navbar-brand">
-      <a  href="https://gateway.fm/">
-        <span class="icon icon-brand">
-          <img src={faucetInfo.logo_url} alt="logo"/>
-        </span>
-      </a>
-    </div>
-  </div>
-</nav>
-
+  <section class="hero is-fullheight faucet-bg">
+    <nav class="navbar">
+      <div class="header-container">
+        <div class="navbar-brand">
+          <a href="https://gateway.fm/">
+            <span class="icon icon-brand">
+              <img src={faucetInfo.logo_url} alt="logo" />
+            </span>
+          </a>
+        </div>
+      </div>
+    </nav>
 
     <div class="hero-body">
       <div class="container has-text-centered">
@@ -58,7 +46,7 @@
               <div class="subtitle">
                 <div>Enter Your Address</div>
                 <div class="address-from">
-                  {faucetInfo.account}
+                  {shortenAddress(faucetInfo.account)}
                   <CopyButton text={faucetInfo.account} />
                 </div>
               </div>
@@ -78,12 +66,11 @@
                   on:click={() => handleRequest(input)}
                   class="button is-primary is-rounded"
                 >
-                  Request
+                  Request Now
                 </button>
               </div>
             </div>
           </div>
-          
         </div>
       </div>
     </div>
@@ -183,6 +170,10 @@
     color: black
     border-radius: 12px !important;
     min-height: 42px;
+    height: 55px;
+    border-radius: 13px;
+    border: none;
+    padding: 15px 19px; 
   }
   .header-container {
     display: flex;
@@ -231,8 +222,10 @@
     background-color: #F3CD52;
     gap: 16px;
     border-radius: 12px !important;
-    color: black;
+    color: #1F1F37;
     min-height: 56px;
+    font-weight: 500;
+    font-size: 18px;
   }
 
   .button:hover {
@@ -251,6 +244,9 @@
     padding: 8px 12px;
     border-radius: 8px;
     background-color: #F7F7F7;
+    font-size: 12px;
+    font-weight: 400;
+    color: #1F1F37;
   }
   .field {
     display: flex;
@@ -277,7 +273,7 @@
     display: inline-flex;
     color: #1F1F37;
     gap: 8px;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 44px; /* Adjust size as needed */
     line-height: 80px;
     letter-spacing: 0px;
@@ -299,15 +295,12 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     letter-spacing: 0px;
     color: #161718;
   }
 
-  .navbar-mobile {
-    display: none;
-  }
 
   .hero .subtitle {
     line-height: 1.5;
@@ -348,9 +341,6 @@
       font-size: 12px;
     }
 
-    .navbar-mobile {
-      display: block;
-    }
   }
 
   @media (max-width: 768px) {
@@ -361,8 +351,9 @@
     }
 
     .title {
-      font-size: 38px;
-      line-height: 56px;
+      font-size: 44px;
+      line-height: 100%;
+      font-weight: 600;
     }
     .navbar-desktop {
       display: none;
