@@ -17,6 +17,7 @@ import (
 type TxBuilder interface {
 	Sender() common.Address
 	Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error)
+	Balance(ctx context.Context) (*big.Int, error)
 }
 
 type TxBuild struct {
@@ -101,6 +102,10 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 	}
 
 	return signedTx.Hash(), nil
+}
+
+func (b *TxBuild) Balance(ctx context.Context) (*big.Int, error) {
+	return b.client.(*ethclient.Client).BalanceAt(ctx, b.fromAddress, nil)
 }
 
 func (b *TxBuild) buildEIP1559Tx(ctx context.Context, to *common.Address, value *big.Int, gasLimit uint64, nonce uint64) (*types.Transaction, error) {

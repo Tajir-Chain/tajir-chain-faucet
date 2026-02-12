@@ -22,6 +22,7 @@ type claimResponse struct {
 
 type infoResponse struct {
 	Account         string `json:"account"`
+	Balance         string `json:"balance"`
 	Network         string `json:"network"`
 	Payout          string `json:"payout"`
 	Symbol          string `json:"symbol"`

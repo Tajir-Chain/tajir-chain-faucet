@@ -16,6 +16,7 @@
     network: 'testnet',
     payout: 1000000000,
     symbol: 'ETH',
+    balance: '0',
     hcaptcha_sitekey: '',
     logo_url: '/logo.svg',
     background_url: 'background.jpg',

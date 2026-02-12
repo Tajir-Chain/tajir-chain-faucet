@@ -74,6 +74,10 @@
         </div>
       </div>
     </div>
+
+    <div class="balance-badge">
+      <span class="balance-value">{faucetInfo.balance} {faucetInfo.symbol}</span>
+    </div>
   </section>
 </main>
 
@@ -167,7 +171,7 @@
     resize: none;
     overflow: hidden;
     background: #F7F7F7;
-    color: black
+    color: black;
     border-radius: 12px !important;
     min-height: 42px;
     height: 55px;
@@ -207,6 +211,21 @@
     background-color: #39bc9f;
     border-radius: 8px;
     color: #183053;
+  }
+  .balance-badge {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    padding: 6px 12px;
+    border-radius: 10px;
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+  .balance-value {
+    font-size: 10px;
+    font-weight: 400;
+    color: #1F1F37;
   }
   .link {
     color: #f3cd52 !important;

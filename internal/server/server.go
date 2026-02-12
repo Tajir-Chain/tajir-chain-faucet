@@ -115,8 +115,18 @@ func (s *Server) handleInfo() http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		balance, err := s.Balance(ctx)
+		balanceStr := "0"
+		if err == nil {
+			balanceStr = chain.WeiToEther(balance)
+		}
+
 		renderJSON(w, infoResponse{
 			Account:         s.Sender().String(),
+			Balance:         balanceStr,
 			Network:         s.cfg.network,
 			Symbol:          s.cfg.symbol,
 			Payout:          strconv.FormatInt(s.cfg.payout, 10),
