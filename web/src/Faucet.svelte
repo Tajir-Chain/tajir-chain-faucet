@@ -65,20 +65,12 @@
     hcaptchaLoaded = true;
   };
 
-  $: document.title = `${faucetInfo.symbol} ${capitalize(
-    faucetInfo.network,
-  )} Faucet`;
-
   window.hcaptchaOnLoad = () => {
     hcaptchaLoaded = true;
   };
 
   $: baseFrontendType = faucetInfo.frontend_type === 'base';
   $: redesignFrontendType = faucetInfo.frontend_type === 'redesign';
-
-  $: document.title = `${faucetInfo.symbol} ${capitalize(
-    faucetInfo.network,
-  )} Faucet`;
 
   let widgetID;
   $: if (mounted && hcaptchaLoaded) {
