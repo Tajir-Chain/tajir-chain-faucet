@@ -1,10 +1,10 @@
-# eth-faucet
+# Tajir Chain Faucet
 
-[![Build](https://img.shields.io/github/actions/workflow/status/chainflag/eth-faucet/build.yml?branch=main)](https://github.com/chainflag/eth-faucet/actions/workflows/build.yml)
-[![Release](https://img.shields.io/github/v/release/chainflag/eth-faucet)](https://github.com/chainflag/eth-faucet/releases)
-[![Report](https://goreportcard.com/badge/github.com/chainflag/eth-faucet)](https://goreportcard.com/report/github.com/chainflag/eth-faucet)
-[![Go](https://img.shields.io/github/go-mod/go-version/chainflag/eth-faucet)](https://go.dev/)
-[![License](https://img.shields.io/github/license/chainflag/eth-faucet)](https://github.com/chainflag/eth-faucet/blob/main/LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/Tajir-Chain/tajir-chain-faucet/devnet-pipeline.yml?branch=devnet)](https://github.com/Tajir-Chain/tajir-chain-faucet/actions/workflows/devnet-pipeline.yml)
+[![Release](https://img.shields.io/github/v/release/Tajir-Chain/tajir-chain-faucet)](https://github.com/Tajir-Chain/tajir-chain-faucet/releases)
+[![Report](https://goreportcard.com/badge/github.com/Tajir-Chain/tajir-chain-faucet)](https://goreportcard.com/report/github.com/Tajir-Chain/tajir-chain-faucet)
+[![Go](https://img.shields.io/github/go-mod/go-version/Tajir-Chain/tajir-chain-faucet)](https://go.dev/)
+[![License](https://img.shields.io/github/license/Tajir-Chain/tajir-chain-faucet)](https://github.com/Tajir-Chain/tajir-chain-faucet/blob/main/LICENSE)
 
 The faucet is a web application with the goal of distributing small amounts of Ether in private and test networks.
 

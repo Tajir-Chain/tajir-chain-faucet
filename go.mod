@@ -1,4 +1,4 @@
-module github.com/chainflag/eth-faucet
+module github.com/Tajir-Chain/tajir-chain-faucet
 
 go 1.24.0
 

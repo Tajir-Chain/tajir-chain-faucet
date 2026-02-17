@@ -8,7 +8,7 @@ RUN yarn install
 COPY web ./
 RUN yarn build
 
-FROM golang:1.25-alpine AS backend
+FROM golang:1.24-alpine AS backend
 
 RUN apk add --no-cache gcc musl-dev linux-headers
 
@@ -20,9 +20,12 @@ RUN go mod download
 COPY . .
 COPY --from=frontend /frontend-build/dist web/dist
 
-RUN go build -o eth-faucet -ldflags "-s -w"
+ARG GIT_COMMIT_SHA
+ARG GIT_TAG
 
-FROM alpine:3.22
+RUN CGO_ENABLED=0 go build -o eth-faucet -ldflags "-s -w -X github.com/Tajir-Chain/tajir-chain-faucet/cmd.appVersion=${GIT_TAG}"
+
+FROM alpine:3.21
 
 RUN apk add --no-cache ca-certificates
 

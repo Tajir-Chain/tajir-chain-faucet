@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/chainflag/eth-faucet/internal/chain"
+	"github.com/Tajir-Chain/tajir-chain-faucet/internal/chain"
 )
 
 type MockTxBuilder struct {
