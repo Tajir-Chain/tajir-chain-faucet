@@ -26,10 +26,10 @@ var (
 
 	payoutFlag            = flag.Int64("faucet.amount", 1000000000, "Number of Gwei to transfer per user request")
 	intervalFlag          = flag.Int("faucet.minutes", 1440, "Number of minutes to wait between funding rounds")
-	netnameFlag           = flag.String("faucet.name", "testnet", "Network name to display on the frontend")
-	symbolFlag            = flag.String("faucet.symbol", "ETH", "Token symbol to display on the frontend")
-	logoFlag              = flag.String("frontend.logo", "/gatewayfm-logo.svg", "Logo to display on the frontend")
-	backgroundFlag        = flag.String("frontend.background", "/background.jpg", "Background to display on the frontend")
+	netnameFlag           = flag.String("faucet.name", getEnv("FAUCET_NAME", "testnet"), "Network name to display on the frontend")
+	symbolFlag            = flag.String("faucet.symbol", getEnv("FAUCET_SYMBOL", "ETH"), "Token symbol to display on the frontend")
+	logoFlag              = flag.String("frontend.logo", getEnv("FRONTEND_LOGO", "/logo.svg"), "Logo to display on the frontend")
+	backgroundFlag        = flag.String("frontend.background", getEnv("FRONTEND_BACKGROUND", "/background.jpg"), "Background to display on the frontend")
 	keyJSONFlag           = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
 	keyPassFlag           = flag.String("wallet.keypass", "password.txt", "Passphrase text file to decrypt keystore")
 	privKeyFlag           = flag.String("wallet.privkey", os.Getenv("PRIVATE_KEY"), "Private key hex to fund user requests with")
@@ -37,11 +37,15 @@ var (
 	mainnetProviderFlag   = flag.String("wallet.mainnetprovider", os.Getenv("MAINNET_WEB3_PROVIDER"), "Endpoint for Ethereum mainnet JSON-RPC connection")
 	minMainnetBalanceFlag = flag.Int64("faucet.minmainnetbalance", 0, "Minimum balance required on mainnet (in Gwei)")
 
-	frontendTypeFlag = flag.String("frontend.type", "redesign", "Type of frontend to generate. Values enum: 'base', 'redesign'.")
+	frontendTypeFlag = flag.String("frontend.type", getEnv("FRONTEND_TYPE", "redesign"), "Type of frontend to generate. Values enum: 'base', 'redesign'.")
 	paidCustomerFlag = flag.Bool("faucet.paidcustomer", false, "Whether the faucet belongs to the paid customer")
 
 	hcaptchaSiteKeyFlag = flag.String("hcaptcha.sitekey", os.Getenv("HCAPTCHA_SITEKEY"), "hCaptcha sitekey")
 	hcaptchaSecretFlag  = flag.String("hcaptcha.secret", os.Getenv("HCAPTCHA_SECRET"), "hCaptcha secret")
+	explorerURLFlag     = flag.String("faucet.explorer", os.Getenv("EXPLORER_URL"), "Block explorer URL for the network")
+	bridgeURLFlag       = flag.String("faucet.bridge", os.Getenv("BRIDGE_URL"), "Bridge URL for the network")
+	websiteURLFlag      = flag.String("faucet.website", os.Getenv("WEBSITE_URL"), "Website URL for the network")
+	twitterURLFlag      = flag.String("faucet.twitter", os.Getenv("TWITTER_URL"), "Twitter URL for the network")
 )
 
 func init() {
@@ -89,6 +93,10 @@ func Execute() {
 		*frontendTypeFlag,
 		*paidCustomerFlag,
 		*mainnetProviderFlag,
+		*explorerURLFlag,
+		*bridgeURLFlag,
+		*websiteURLFlag,
+		*twitterURLFlag,
 		minMainnetBalance,
 	)
 
@@ -120,4 +128,11 @@ func getPrivateKeyFromFlags() (*ecdsa.PrivateKey, error) {
 	}
 
 	return chain.DecryptKeyfile(keyfile, strings.TrimRight(string(password), "\r\n"))
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }

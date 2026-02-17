@@ -31,6 +31,11 @@ type infoResponse struct {
 	BackgroundURL   string `json:"background_url"`
 	PaidCustomer    bool   `json:"paid_customer"`
 	FrontendType    string `json:"frontend_type"`
+	Interval        int    `json:"interval"`
+	ExplorerURL     string `json:"explorer_url"`
+	BridgeURL       string `json:"bridge_url"`
+	WebsiteURL      string `json:"website_url"`
+	TwitterURL      string `json:"twitter_url"`
 }
 
 type malformedRequest struct {

@@ -135,6 +135,11 @@ func (s *Server) handleInfo() http.HandlerFunc {
 			BackgroundURL:   s.cfg.backgroundURL,
 			FrontendType:    s.cfg.frontendType,
 			PaidCustomer:    s.cfg.paidCustomer,
+			Interval:        s.cfg.interval,
+			ExplorerURL:     s.cfg.explorerURL,
+			BridgeURL:       s.cfg.bridgeURL,
+			WebsiteURL:      s.cfg.websiteURL,
+			TwitterURL:      s.cfg.twitterURL,
 		}, http.StatusOK)
 	}
 }

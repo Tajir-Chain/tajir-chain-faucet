@@ -44,6 +44,12 @@ If you are developing on Windows, it is recommended to use WSL (Ubuntu). Follow 
    ```bash
    export WEB3_PROVIDER=http://localhost:8545
    export PRIVATE_KEY=your_private_key_here
+   export EXPLORER_URL=https://explorer.devnet.tajirchain.com # Optional
+   export BRIDGE_URL=https://bridge.devnet.tajirchain.com # Optional
+   export FAUCET_NAME=Devnet # Optional
+   export FAUCET_SYMBOL=TJR # Optional
+   export FRONTEND_LOGO=/logo.svg # Optional
+   export HCAPTCHA_SITEKEY=your_site_key # Optional
    ```
 
    *Note: For testing without a real node, you can mock or just ensure the flags are passed.*
@@ -56,7 +62,7 @@ From the project root:
 
 ```bash
 # Example running with flags (replace with your actual provider/key)
-go run main.go -wallet.provider https://ethereum-sepolia.publicnode.com -wallet.privkey f9c40c9e559be901fb2342089b45b34666843ae1d5ecdc133ceddbedc3dc6281 -faucet.name sepolia -faucet.amount 100000000 -faucet.minutes 1 -frontend.logo /logo.svg -faucet.paidcustomer true
+go run main.go -wallet.provider https://ethereum-sepolia.publicnode.com -wallet.privkey f9c40c9e559be901fb2342089b45b34666843ae1d5ecdc133ceddbedc3dc6281 -faucet.name sepolia -faucet.symbol TJR -faucet.amount 100000000 -faucet.minutes 1 -frontend.logo /logo.svg -faucet.paidcustomer=true -faucet.explorer https://explorer.devnet.tajirchain.com -faucet.bridge https://bridge.devnet.tajirchain.com -hcaptcha.sitekey your_site_key -frontend.type redesign
 ```
 
 If you don't have a provider yet and just want to test the server startup, it might panic without a valid private key/provider. You can generate a random dummy private key for testing startup:

@@ -18,6 +18,10 @@ type Config struct {
 	frontendType      string
 	paidCustomer      bool
 	mainnetProvider   string
+	explorerURL       string
+	bridgeURL         string
+	websiteURL        string
+	twitterURL        string
 	minMainnetBalance *big.Int
 }
 
@@ -28,7 +32,7 @@ func NewConfig(
 	hcaptchaSiteKey, hcaptchaSecret, logoURL, backgroundURL string,
 	frontendType string,
 	paidCustomer bool,
-	mainnetProvider string,
+	mainnetProvider, explorerURL, bridgeURL, websiteURL, twitterURL string,
 	minMainnetBalance *big.Int,
 ) *Config {
 	return &Config{
@@ -45,6 +49,10 @@ func NewConfig(
 		frontendType:      frontendType,
 		paidCustomer:      paidCustomer,
 		mainnetProvider:   mainnetProvider,
+		explorerURL:       explorerURL,
+		bridgeURL:         bridgeURL,
+		websiteURL:        websiteURL,
+		twitterURL:        twitterURL,
 		minMainnetBalance: minMainnetBalance,
 	}
 }

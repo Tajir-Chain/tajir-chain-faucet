@@ -22,6 +22,11 @@
     background_url: 'background.jpg',
     frontend_type: 'redesign',
     paid_customer: false,
+    bridge_url: 'https://bridge.devnet.tajirchain.com/',
+    explorer_url: 'https://explorer.devnet.tajirchain.com/',
+    website_url: 'https://www.tajirchain.com/',
+    twitter_url: 'https://x.com/tajirchain?s=21',
+    interval: 2
   };
 
   let mounted = false;
@@ -58,7 +63,9 @@
 
   onMount(async () => {
     const res = await fetch('/api/info');
+    console.log('Faucet Info Response:', res);
     faucetInfo = await res.json();
+    console.log('Parsed Faucet Info:', faucetInfo);
     mounted = true;
   });
 
@@ -89,31 +96,45 @@
     animate: { in: 'fadeIn', out: 'fadeOut' },
   });
 
-  async function handleRequest(input) {
+  async function connectWallet() {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        input = accounts[0];
+        toast({ message: 'Wallet Connected', type: 'is-success' });
+      } catch (error) {
+        toast({ message: error.message || 'Connection failed', type: 'is-warning' });
+      }
+    } else {
+      toast({ message: 'MetaMask not found. Please install it to connect.', type: 'is-warning' });
+    }
+  }
+
+  async function handleRequest(input, silenceToast = false) {
     let address = input;
     if (address === null) {
-      toast({ message: 'input required', type: 'is-warning' });
-      return;
+      if (!silenceToast) toast({ message: 'input required', type: 'is-warning' });
+      return { ok: false, msg: 'input required' };
     }
     if (address.endsWith('.eth')) {
       try {
         const provider = new CloudflareProvider();
         address = await provider.resolveName(address);
         if (!address) {
-          toast({ message: 'invalid ENS name', type: 'is-warning' });
-          return;
+          if (!silenceToast) toast({ message: 'invalid ENS name', type: 'is-warning' });
+          return { ok: false, msg: 'invalid ENS name' };
         }
       } catch (error) {
-        toast({ message: error.reason, type: 'is-warning' });
-        return;
+        if (!silenceToast) toast({ message: error.reason, type: 'is-warning' });
+        return { ok: false, msg: error.reason };
       }
     }
 
     try {
       address = getAddress(address);
     } catch (error) {
-      toast({ message: error.reason, type: 'is-warning' });
-      return;
+      if (!silenceToast) toast({ message: error.reason, type: 'is-warning' });
+      return { ok: false, msg: error.reason };
     }
 
     try {
@@ -137,10 +158,13 @@
       });
 
       let { msg } = await res.json();
-      let type = res.ok ? 'is-success' : 'is-warning';
-      toast({ message: msg, type });
+      let ok = res.ok;
+      let type = ok ? 'is-success' : 'is-warning';
+      if (!silenceToast) toast({ message: msg, type });
+      return { ok, msg };
     } catch (err) {
       console.error(err);
+      return { ok: false, msg: err.message };
     }
   }
   function capitalize(str) {
@@ -162,5 +186,5 @@
 {#if baseFrontendType}
   <BaseDesign {faucetInfo} {input} {handleRequest} {gweiToEth} />
 {:else if redesignFrontendType}
-  <Redesign {faucetInfo} {input} {handleRequest} {gweiToEth} />
+  <Redesign {faucetInfo} {input} {handleRequest} {gweiToEth} {connectWallet} />
 {/if}
