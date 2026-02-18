@@ -17,6 +17,7 @@ type Config struct {
 	backgroundURL     string
 	frontendType      string
 	paidCustomer      bool
+	rpcURL            string
 	mainnetProvider   string
 	explorerURL       string
 	bridgeURL         string
@@ -32,7 +33,7 @@ func NewConfig(
 	hcaptchaSiteKey, hcaptchaSecret, logoURL, backgroundURL string,
 	frontendType string,
 	paidCustomer bool,
-	mainnetProvider, explorerURL, bridgeURL, websiteURL, twitterURL string,
+	rpcURL, mainnetProvider, explorerURL, bridgeURL, websiteURL, twitterURL string,
 	minMainnetBalance *big.Int,
 ) *Config {
 	return &Config{
@@ -48,6 +49,7 @@ func NewConfig(
 		backgroundURL:     backgroundURL,
 		frontendType:      frontendType,
 		paidCustomer:      paidCustomer,
+		rpcURL:            rpcURL,
 		mainnetProvider:   mainnetProvider,
 		explorerURL:       explorerURL,
 		bridgeURL:         bridgeURL,

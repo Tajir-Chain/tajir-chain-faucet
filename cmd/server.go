@@ -92,6 +92,7 @@ func Execute() {
 		*backgroundFlag,
 		*frontendTypeFlag,
 		*paidCustomerFlag,
+		*providerFlag,
 		*mainnetProviderFlag,
 		*explorerURLFlag,
 		*bridgeURLFlag,

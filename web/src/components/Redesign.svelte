@@ -6,6 +6,7 @@
   export let handleRequest;
   export let gweiToEth;
   export let connectWallet;
+  export let disconnectWallet;
 
   function autoResize(event) {
     const textarea = event.target;
@@ -65,15 +66,15 @@
     }
   }
 
-  const TAJIR_CHAIN_ID = '21519080';
-  const TAJIR_CHAIN_ID_HEX = '0x1485A58';
   let isWrongNetwork = false;
+  $: chainIdHex = faucetInfo.chain_id ? '0x' + Number(faucetInfo.chain_id).toString(16) : '';
 
   async function checkNetwork() {
     if (window.ethereum) {
       try {
         const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        isWrongNetwork = parseInt(chainId, 16).toString() !== TAJIR_CHAIN_ID;
+        // Use case-insensitive comparison for hex chain IDs
+        isWrongNetwork = parseInt(chainId, 16).toString() !== faucetInfo.chain_id;
       } catch (e) {
         console.error("Failed to get chainId", e);
       }
@@ -86,15 +87,15 @@
       await window.ethereum.request({
         method: 'wallet_addEthereumChain',
         params: [{
-          chainId: TAJIR_CHAIN_ID_HEX,
-          chainName: 'Tajir Devnet',
-          rpcUrls: ['https://rpc.devnet.tajirchain.com'],
+          chainId: chainIdHex,
+          chainName: `Tajir ${capitalize(faucetInfo.network)}`,
+          rpcUrls: [faucetInfo.rpc_url],
           nativeCurrency: {
             name: 'Tajir',
-            symbol: 'TJR',
+            symbol: faucetInfo.symbol,
             decimals: 18,
           },
-          blockExplorerUrls: ['https://explorer.devnet.tajirchain.com/'],
+          blockExplorerUrls: [faucetInfo.explorer_url],
         }],
       });
       await checkNetwork();
@@ -114,7 +115,11 @@
 
 <main>
   <section class="hero faucet-bg">
-    <div class="bg-container"></div>
+    <div class="bg-container">
+      <div class="blob-yellow blob-1"></div>
+      <div class="blob-yellow blob-2"></div>
+      <div class="blob-green blob-3"></div>
+    </div>
     <nav class="navbar">
       <div class="header-container">
         <div class="navbar-brand">
@@ -132,24 +137,54 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
           </a>
         </div>
+        <div class="navbar-actions">
+          {#if !input}
+            <button on:click={connectWallet} class="button is-secondary is-small is-rounded nav-connect-btn">
+              Connect Wallet
+            </button>
+          {:else}
+            <div class="nav-status-widget">
+              <div class="nav-status-info">
+                <span class="nav-address">{shortenAddress(input)}</span>
+                <span class="nav-network">{capitalize(faucetInfo.network)}</span>
+              </div>
+              
+              {#if isWrongNetwork && window.ethereum}
+                <div class="nav-add-icon-wrapper">
+                  <button class="nav-add-icon-btn" on:click={addNetwork}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                  <span class="custom-tooltip">Add Tajir {capitalize(faucetInfo.network)}</span>
+                </div>
+              {/if}
+
+              <div class="nav-status-badge">
+                <span class="blinking-dot"></span>
+              </div>
+              <button class="disconnect-icon-btn" on:click={disconnectWallet} title="Disconnect Wallet">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </button>
+            </div>
+          {/if}
+        </div>
       </div>
     </nav>
 
     <div class="hero-body">
       <div class="container">
-        <div class="columns is-centered desktop-columns">
-          
-          <!-- Left Column: Info & How It Works -->
-          <div class="column is-5 left-scroll-column">
-            <div class="faucet-header has-text-left-desktop">
-              <h1 class="faucet-title">Tajir {faucetInfo.network} Faucet</h1>
-              <p class="faucet-subtitle">Get Free {faucetInfo.symbol} Tokens to test the Tajir blockchain</p>
-              <p class="faucet-description">
-                {faucetInfo.symbol} is the native token of Tajir Blockchain. 
-                Use it to pay gas fees and test smart contracts on our {faucetInfo.network}.
-              </p>
-            </div>
+        <div class="faucet-header has-text-centered">
+          <h1 class="faucet-title">Tajir {capitalize(faucetInfo.network)} Faucet</h1>
+          <p class="faucet-subtitle">Get Free {faucetInfo.symbol} Tokens to test the Tajir blockchain</p>
+          <p class="faucet-description">
+            {faucetInfo.symbol} is the native token of Tajir Blockchain. 
+            Use it to pay gas fees and test smart contracts on our {faucetInfo.network}.
+          </p>
+        </div>
 
+        <div class="columns desktop-columns">
+          
+          <!-- Left Column: Info & Details -->
+          <div class="column is-6">
             <div class="how-it-works">
               <h3 class="hiw-title">How It Works</h3>
               <div class="hiw-steps">
@@ -162,7 +197,7 @@
                 <div class="hiw-step">
                   <span class="step-num">2</span>
                   <div class="step-content">
-                    <p class="step-text">Request free TJR</p>
+                    <p class="step-text">Request free {faucetInfo.symbol}</p>
                     <p class="step-subtext">Automatically to connected wallet or use manual address.</p>
                   </div>
                 </div>
@@ -178,32 +213,27 @@
             <div class="network-details {isWrongNetwork ? 'is-highlighted' : ''}">
               <div class="nd-header">
                 <h3 class="nd-title">Network Details</h3>
-                {#if isWrongNetwork && window.ethereum}
-                  <button class="button is-small is-primary is-rounded nd-add-btn" on:click={addNetwork}>
-                    Add to Wallet
-                  </button>
-                {/if}
               </div>
               <div class="nd-grid">
                 <div class="nd-item">
                   <div class="nd-label">RPC URL</div>
                   <div class="nd-value">
-                    <span>https://rpc.devnet.tajirchain.com</span>
-                    <CopyButton text="https://rpc.devnet.tajirchain.com" />
+                    <span>{faucetInfo.rpc_url}</span>
+                    <CopyButton text={faucetInfo.rpc_url} />
                   </div>
                 </div>
                 <div class="nd-item">
                   <div class="nd-label">Chain ID</div>
                   <div class="nd-value">
-                    <span>21519080</span>
-                    <CopyButton text="21519080" />
+                    <span>{faucetInfo.chain_id}</span>
+                    <CopyButton text={faucetInfo.chain_id} />
                   </div>
                 </div>
                 <div class="nd-item">
                   <div class="nd-label">Explorer</div>
                   <div class="nd-value">
-                    <span>https://explorer.devnet.tajirchain.com/</span>
-                    <CopyButton text="https://explorer.devnet.tajirchain.com/" />
+                    <span>{faucetInfo.explorer_url || "https://explorer.devnet.tajirchain.com/"}</span>
+                    <CopyButton text={faucetInfo.explorer_url || "https://explorer.devnet.tajirchain.com/"} />
                   </div>
                 </div>
               </div>
@@ -212,9 +242,9 @@
             <div class="token-info-section">
               <h2 class="creative-heading">Fuel Your Innovation on Tajir</h2>
               <div class="token-box">
-                <h3 class="token-box-title">What is TJR?</h3>
+                <h3 class="token-box-title">What is {faucetInfo.symbol}?</h3>
                 <p class="token-box-desc">
-                  TJR is the native gas token of Tajir devnet/testnet blockchains. You can use it to:
+                  {faucetInfo.symbol} is the native gas token of Tajir devnet/testnet blockchains. You can use it to:
                 </p>
                 <div class="token-features">
                   <div class="feature-item">
@@ -232,27 +262,12 @@
                 </div>
               </div>
             </div>
-
           </div>
 
           <!-- Right Column: Card & Action -->
-          <div class="column is-6 is-offset-1-desktop right-sticky-column">
+          <div class="column is-6 right-sticky-column">
             <div id="hcaptcha" data-size="invisible"></div>
             
-            <div class="connection-status">
-              <div class="status-item">
-                <span class="status-label">Connected:</span>
-                <span class="status-value">{shortenAddress(faucetInfo.account) || 'Not Connected'}</span>
-              </div>
-              <div class="status-item">
-                <span class="status-label">Network:</span>
-                <span class="status-value">Tajir {faucetInfo.network}</span>
-              </div>
-              <div class="status-item">
-                <span class="status-label">Status:</span>
-                <span class="status-value">{capitalize(faucetInfo.network)} Live <span class="blinking-dot"></span></span>
-              </div>
-            </div>
 
             <div class="card">
               <div>
@@ -273,18 +288,11 @@
                 </div>
                 <div class="control buttons-group">
                   <button
-                    on:click={connectWallet}
-                    class="button is-secondary is-rounded"
-                    disabled={!!input}
-                  >
-                    {input ? 'Wallet Connected' : 'Connect Wallet'}
-                  </button>
-                  <button
                     on:click={requestTokens}
                     class="button is-primary is-rounded {txState === 'sending' || txState === 'monitoring' ? 'is-loading' : ''}"
                     disabled={txState === 'sending' || txState === 'monitoring'}
                   >
-                    Request Free TJR
+                    Request Free {faucetInfo.symbol}
                   </button>
                 </div>
               </div>
@@ -357,11 +365,10 @@
               </div>
             </div>
 
-            <p class="disclaimer has-text-centered-mobile has-text-left-desktop">
+            <p class="disclaimer">
               <strong>Disclaimer:</strong> This faucet sends free tokens for development and testing purposes only, and have no monetary value.
             </p>
           </div>
-
         </div>
       </div>
     </div>
@@ -428,30 +435,79 @@
   border-radius: 50%;
   z-index: 0;
   pointer-events: none;
+  opacity: 0.6;
 }
 
-/* Top Right – LARGE */
+/* Top Right – Green */
 .bg-container::before {
   top: -420px;
   right: -420px;
   background: radial-gradient(
     circle,
-    rgba(57, 188, 159, 0.45) 0%,
-    rgba(57, 188, 159, 0.22) 45%,
-    rgba(57, 188, 159, 0) 75%
+    rgba(57, 188, 159, 0.4) 0%,
+    rgba(57, 188, 159, 0.1) 60%,
+    rgba(57, 188, 159, 0) 80%
   );
+  animation: float-slow 20s infinite alternate;
 }
 
-/* Bottom Left – LARGE */
+/* Bottom Left – Green */
 .bg-container::after {
   bottom: -460px;
   left: -460px;
   background: radial-gradient(
     circle,
-    rgba(57, 188, 159, 0.45) 0%,
-    rgba(57, 188, 159, 0.22) 45%,
-    rgba(57, 188, 159, 0) 75%
+    rgba(57, 188, 159, 0.4) 0%,
+    rgba(57, 188, 159, 0.1) 60%,
+    rgba(57, 188, 159, 0) 80%
   );
+  animation: float-slow 25s infinite alternate-reverse;
+}
+
+.blob-yellow {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blob-1 {
+  top: 10%;
+  left: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(243, 205, 82, 0.25) 0%,
+    rgba(243, 205, 82, 0.1) 50%,
+    rgba(243, 205, 82, 0) 70%
+  );
+  animation: pulse-yellow 15s infinite alternate;
+}
+
+.blob-2 {
+  bottom: 10%;
+  right: -5%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(
+    circle,
+    rgba(243, 205, 82, 0.2) 0%,
+    rgba(243, 205, 82, 0.05) 50%,
+    rgba(243, 205, 82, 0) 70%
+  );
+  animation: pulse-yellow 18s infinite alternate-reverse;
+}
+
+@keyframes float-slow {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(50px, 40px) scale(1.1); }
+}
+
+@keyframes pulse-yellow {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  50% { transform: translate(-30px, 20px) scale(1.1); opacity: 0.8; }
+  100% { transform: translate(30px, -20px) scale(0.9); opacity: 0.5; }
 }
 
 /* Keep content above gradients */
@@ -480,16 +536,17 @@
 }
 
 
+
 .navbar {
   display: flex;
   width: 100%;
 }
 
 .header-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   width: 100%;
   padding-inline: 32px;
-  justify-content: space-between;
   align-items: center;
   gap: 16px;
   max-width: 1400px;
@@ -574,7 +631,12 @@
     font-weight: 700;
     font-size: 16px;
     border: none;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 14px rgba(243, 205, 82, 0.4);
+  }
+
+  .button.is-primary:hover:not(:disabled) {
+    box-shadow: 0 8px 24px rgba(243, 205, 82, 0.6);
   }
 
   .button.is-secondary {
@@ -590,7 +652,12 @@
     min-height: 52px;
     font-weight: 700;
     font-size: 16px;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 14px rgba(57, 188, 159, 0.2);
+  }
+
+  .button.is-secondary:hover:not(:disabled) {
+    box-shadow: 0 8px 24px rgba(57, 188, 159, 0.35);
   }
 
   .button.is-secondary:hover {
@@ -599,8 +666,8 @@
   }
 
   .button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    /* Lift removed as requested */
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
   }
 
   .button:disabled {
@@ -662,37 +729,39 @@
   }
 
   .faucet-header {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.5rem;
+    padding-top: 1rem;
   }
 
   @media (min-width: 1024px) {
-    .has-text-left-desktop {
-      text-align: left !important;
+    .faucet-header {
+      margin-bottom: 2rem;
     }
   }
 
   .faucet-title {
     color: #1F1F37;
-    font-weight: 700;
-    font-size: 38px; /* Slightly reduced for sidebar fit */
-    line-height: 1.1;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.02em;
+    font-weight: 800;
+    font-size: 48px;
+    line-height: 1;
+    margin-bottom: 1rem;
+    letter-spacing: -0.03em;
   }
 
   .faucet-subtitle {
     color: #39bc9f;
     font-weight: 600;
-    font-size: 18px;
-    margin-bottom: 0.75rem;
+    font-size: 20px;
+    margin-bottom: 1.25rem;
   }
 
   .faucet-description {
     color: #5A5A75;
-    font-size: 15px;
-    line-height: 1.5;
-    max-width: 100%;
-    margin-bottom: 1.5rem;
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 720px;
+    margin-inline: auto;
+    margin-bottom: 0;
   }
 
   /* How It Works Styles */
@@ -1032,14 +1101,167 @@
     border: none !important;
   }
 
+  .navbar-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .nav-connect-btn {
+    width: auto !important;
+    min-width: 140px;
+    min-height: 40px !important;
+    padding: 0 20px !important;
+    font-size: 14px !important;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-connect-btn:hover {
+    box-shadow: 0 6px 16px rgba(57, 188, 159, 0.3) !important;
+  }
+
+  .nav-status-widget {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  .nav-status-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+  }
+
+  .nav-address {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1F1F37;
+    line-height: 1.2;
+  }
+
+  .nav-network {
+    font-size: 11px;
+    font-weight: 600;
+    color: #39bc9f;
+    line-height: 1.2;
+  }
+
+  .nav-add-icon-btn {
+    background: #F3CD52;
+    border: none;
+    padding: 6px;
+    margin: 0 4px;
+    color: #1F1F37;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(243, 205, 82, 0.3);
+  }
+
+  .nav-add-icon-btn:hover {
+    box-shadow: 0 4px 12px rgba(243, 205, 82, 0.4);
+    transform: scale(1.05);
+  }
+
+  .nav-add-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .custom-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: #1F1F37;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  .custom-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #1F1F37 transparent;
+  }
+
+  .nav-add-icon-wrapper:hover .custom-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(8px);
+  }
+
+  .nav-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(57, 188, 159, 0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .status-text {
+    display: none;
+  }
+
+  .disconnect-icon-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    margin-left: 4px;
+    color: #7E7E91;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .disconnect-icon-btn:hover {
+    background: rgba(255, 94, 94, 0.1);
+    color: #ff5e5e;
+  }
+
   @media (max-width: 768px) {
     .navbar-menu-custom {
       display: none;
     }
     
     .header-container {
+      display: flex;
       justify-content: space-between;
       padding-inline: 16px;
+    }
+
+    .navbar-actions {
+      flex-shrink: 0;
+    }
+
+    .nav-status-info {
+      display: none;
     }
   }
 
@@ -1313,9 +1535,4 @@
     word-break: break-all;
   }
 
-  .nd-add-btn {
-    height: 28px !important;
-    font-size: 11px !important;
-    padding: 0 12px !important;
-  }
 </style>

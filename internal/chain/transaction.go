@@ -18,12 +18,14 @@ type TxBuilder interface {
 	Sender() common.Address
 	Transfer(ctx context.Context, to string, value *big.Int) (common.Hash, error)
 	Balance(ctx context.Context) (*big.Int, error)
+	ChainID() *big.Int
 }
 
 type TxBuild struct {
 	client               bind.ContractTransactor
 	privateKey           *ecdsa.PrivateKey
 	signer               types.Signer
+	chainID              *big.Int
 	fromAddress          common.Address
 	nonce                uint64
 	supportsEIP1559      bool
@@ -55,6 +57,7 @@ func NewTxBuilder(provider string, privateKey *ecdsa.PrivateKey, chainID *big.In
 		client:               client,
 		privateKey:           privateKey,
 		signer:               types.NewLondonSigner(chainID),
+		chainID:              chainID,
 		fromAddress:          crypto.PubkeyToAddress(privateKey.PublicKey),
 		supportsEIP1559:      supportsEIP1559,
 		lastRefreshTime:      time.Time{},
@@ -106,6 +109,10 @@ func (b *TxBuild) Transfer(ctx context.Context, to string, value *big.Int) (comm
 
 func (b *TxBuild) Balance(ctx context.Context) (*big.Int, error) {
 	return b.client.(*ethclient.Client).BalanceAt(ctx, b.fromAddress, nil)
+}
+
+func (b *TxBuild) ChainID() *big.Int {
+	return b.chainID
 }
 
 func (b *TxBuild) buildEIP1559Tx(ctx context.Context, to *common.Address, value *big.Int, gasLimit uint64, nonce uint64) (*types.Transaction, error) {
