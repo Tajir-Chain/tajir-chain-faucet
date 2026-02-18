@@ -66,18 +66,22 @@ From the project root:
 ```bash
 # Example running with flags (replace with your actual provider/key)
 go run main.go \
-  -wallet.provider https://rpc.devnet.tajirchain.com \
-  -wallet.privkey 0000000000000000000000000000000000000000000000000000000000000001 \
-  -faucet.name Devnet \
+  -wallet.provider http://cdk-erigon-sequencer.tajir-l2.svc:8545 \
+  -wallet.privkey 7d79a91573fddc5befe23467234656755fe5783d8c5ef89b0def19e1bd900c6b \
+  -faucet.name devnet \
+  -faucet.publicrpc https://rpc.devnet.tajirchain.com \
   -faucet.symbol tTJR \
-  -faucet.amount 100000000 \
-  -faucet.minutes 2 \
+  -faucet.amount 1000000000 \
+  -faucet.minutes 1440 \
+  -faucet.paidcustomer true \
   -faucet.explorer https://explorer.devnet.tajirchain.com \
   -faucet.bridge https://bridge.devnet.tajirchain.com \
   -faucet.website https://www.tajirchain.com/ \
   -faucet.twitter https://x.com/tajirchain?s=21 \
   -frontend.logo /logo.svg \
-  -frontend.type redesign
+  -frontend.type redesign \
+  -httpport 8080 \
+  -proxycount 1
 ```
 
 If you don't have a provider yet and just want to test the server startup, it might panic without a valid private key/provider. You can generate a random dummy private key for testing startup:

@@ -262,3 +262,123 @@ With attention to UX polish
 Delivering deploy-ready Svelte code
 
 That visually holds up under real usage conditions
+
+7. “Use ui-ux-pro-max for All UI Work”
+
+This establishes a mandatory standard for any UI-related implementation.
+
+Whenever a task involves:
+
+Layout design
+
+Component styling
+
+Visual structure
+
+Interaction states
+
+Responsive behavior
+
+Animations or transitions
+
+Spacing and alignment
+
+Typography and visual hierarchy
+
+You must apply the ui-ux-pro-max standard.
+
+What “ui-ux-pro-max” Implies
+
+It means the interface must reflect a high-end SaaS-level execution quality.
+
+✅ Visual Precision
+
+Perfect alignment.
+
+Consistent spacing scale.
+
+Clean grid or flex structure.
+
+No visual imbalance.
+
+Clear section separation.
+
+✅ Interaction Polish
+
+Hover states.
+
+Active states.
+
+Focus-visible states.
+
+Disabled states.
+
+Smooth transitions.
+
+Clear feedback on action.
+
+✅ Responsiveness
+
+Mobile-first thinking.
+
+Proper stacking behavior.
+
+No overflow.
+
+No cramped inputs.
+
+Buttons remain tappable on small screens.
+
+Typography scales appropriately.
+
+✅ Accessibility
+
+Semantic HTML.
+
+ARIA where required.
+
+Keyboard navigability.
+
+Screen reader support.
+
+Proper contrast ratios.
+
+✅ Production-Level UI Thinking
+
+Components must feel cohesive.
+
+No ad-hoc styling.
+
+No rushed layout decisions.
+
+No inconsistent paddings or margins.
+
+No layout shifts on load.
+
+Mandatory Behavior for Future UI Code
+
+Whenever UI is involved:
+
+The output must look deploy-ready.
+
+It must resemble a real product.
+
+It must pass visual sanity checks at 320px, tablet, and desktop.
+
+It must not feel like a demo or prototype.
+
+It must reflect deliberate UX decisions.
+
+Final Interpretation
+
+Every UI task must be executed as if:
+
+It will go live today.
+
+Thousands of users will interact with it.
+
+A design team will review it.
+
+It represents a premium SaaS product.
+
+This clause is non-optional for all future UI-related Svelte work.

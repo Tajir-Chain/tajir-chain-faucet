@@ -131,6 +131,7 @@ func (s *Server) handleInfo() http.HandlerFunc {
 			ChainId:         s.ChainID().String(),
 			ChainIdHex:      fmt.Sprintf("0x%x", s.ChainID()),
 			RpcURL:          s.cfg.rpcURL,
+			PublicRpcURL:    s.cfg.publicRpcURL,
 			Symbol:          s.cfg.symbol,
 			Payout:          strconv.FormatInt(s.cfg.payout, 10),
 			HcaptchaSiteKey: s.cfg.hcaptchaSiteKey,

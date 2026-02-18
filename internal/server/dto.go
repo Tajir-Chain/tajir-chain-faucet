@@ -27,6 +27,7 @@ type infoResponse struct {
 	ChainId         string `json:"chain_id"`
 	ChainIdHex      string `json:"chain_id_hex"`
 	RpcURL          string `json:"rpc_url"`
+	PublicRpcURL    string `json:"public_rpc_url"`
 	Payout          string `json:"payout"`
 	Symbol          string `json:"symbol"`
 	HcaptchaSiteKey string `json:"hcaptcha_sitekey,omitempty"`
