@@ -112,6 +112,9 @@
     }
   });
 
+  let isMenuOpen = false;
+  const toggleMenu = () => isMenuOpen = !isMenuOpen;
+
   // Animation variants or helper states could go here if needed
 </script>
 
@@ -148,6 +151,16 @@
           </div>
         </div>
 
+        <div class="nav-mobile-toggle">
+          <button class="btn-hamburger" on:click={toggleMenu} aria-label="Toggle Menu">
+            {#if isMenuOpen}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            {:else}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            {/if}
+          </button>
+        </div>
+
         <div class="nav-right">
           {#if !input}
             <button on:click={connectWallet} class="btn-connect">
@@ -180,6 +193,31 @@
           {/if}
         </div>
       </div>
+
+      {#if isMenuOpen}
+        <div class="mobile-menu-overlay" on:click={toggleMenu}>
+          <div class="mobile-menu-content" on:click|stopPropagation>
+            <div class="mobile-nav-links">
+              <a href="https://www.tajirchain.com/" target="_blank" class="mobile-nav-link" on:click={toggleMenu}>
+                <span class="m-icon">🏠</span>
+                Official Website
+              </a>
+              <a href={faucetInfo.explorer_url || "https://explorer.devnet.tajirchain.com/"} target="_blank" class="mobile-nav-link" on:click={toggleMenu}>
+                <span class="m-icon">🔍</span>
+                Block Explorer
+              </a>
+              <a href={faucetInfo.bridge_url || "https://bridge.devnet.tajirchain.com/"} target="_blank" class="mobile-nav-link" on:click={toggleMenu}>
+                <span class="m-icon">🔗</span>
+                Token Bridge
+              </a>
+              <a href="https://x.com/tajirchain?s=21" target="_blank" class="mobile-nav-link" on:click={toggleMenu}>
+                <span class="m-icon">𝕏</span>
+                Follow Twitter
+              </a>
+            </div>
+          </div>
+        </div>
+      {/if}
     </nav>
 
     <div class="hero-body">
@@ -998,7 +1036,7 @@
   }
 
   .nd-title {
-    font-size: 0.9rem !important;
+    font-size: 1rem !important;
     font-weight: 800 !important;
     color: var(--dark) !important;
     margin: 0 !important;
@@ -1062,7 +1100,7 @@
   }
 
   .cell-value {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--dark);
     word-break: break-all;
@@ -1104,7 +1142,7 @@
   }
 
   .token-box-title {
-    font-size: 0.9rem !important;
+    font-size: 1rem !important;
     font-weight: 800 !important;
     color: var(--dark) !important;
     margin: 0 !important;
@@ -1120,7 +1158,7 @@
   }
 
   .token-box-desc {
-    font-size: 0.8rem !important;
+    font-size: 0.85rem !important;
     color: var(--dark-muted) !important;
     line-height: 1.5 !important;
     margin: 0 !important;
@@ -1155,7 +1193,7 @@
   }
 
   .feat-cell span {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--dark);
   }
@@ -1187,7 +1225,7 @@
   }
 
   .card .subtitle {
-    font-size: 1rem;
+    font-size: 0.85rem;
     color: var(--dark-muted);
     margin-bottom: 2rem;
     font-weight: 500;
@@ -1307,7 +1345,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--dark-muted);
   }
@@ -1347,6 +1385,82 @@
     text-transform: uppercase;
   }
 
+  /* ===== Mobile Nav Toggle ===== */
+  .nav-mobile-toggle {
+    display: none;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .btn-hamburger {
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-hamburger:hover {
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  /* Mobile Menu Overlay */
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 5.5rem;
+    left: 1rem;
+    right: 1rem;
+    z-index: 999;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    padding: 1rem;
+    animation: menu-slide-down 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @keyframes menu-slide-down {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .mobile-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 16px;
+    color: var(--dark);
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .mobile-nav-link:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--secondary);
+  }
+
+  .m-icon {
+    font-size: 1.25rem;
+    opacity: 0.8;
+  }
+
   .blinking-dot {
     width: 8px;
     height: 8px;
@@ -1380,42 +1494,130 @@
 
   /* ===== Mobile Responsive ===== */
   @media (max-width: 1024px) {
+    .hero-body {
+      padding-top: 2rem;
+    }
     .desktop-columns {
       flex-direction: column;
-      gap: 2rem;
+      gap: 1.5rem;
     }
     .column.is-6 {
       width: 100%;
     }
     .faucet-title {
-      font-size: 2.5rem;
+      font-size: 2.2rem;
     }
-    .header-container {
-      margin: 0 1rem;
+    .nav-glass-pill {
+      padding: 0.6rem 1.25rem;
     }
   }
 
   @media (max-width: 768px) {
     .navbar {
-      padding: 0 1rem;
+      top: 0.5rem;
+      padding: 0 0.75rem;
+      margin-bottom: 2rem;
     }
-    .navbar-menu-custom {
+    .nav-glass-pill {
+      grid-template-columns: auto 1fr auto;
+      padding: 0.5rem 1rem;
+      border-radius: 18px;
+    }
+    .nav-center {
       display: none;
     }
-    .header-container {
-      display: none;
+    .nav-mobile-toggle {
+      display: flex;
     }
-    .navbar-brand {
-      flex: 1;
+    .nav-right {
+      order: 3;
     }
-    .navbar-actions {
-      flex: 0;
+    .nav-left {
+      order: 1;
     }
-    .card {
-      padding: 2rem 1.5rem;
+    .nav-mobile-toggle {
+      order: 2;
+    }
+    .brand-logo {
+      height: 36px;
     }
     .faucet-title {
-      font-size: 2rem;
+      font-size: 1.8rem;
+    }
+    .faucet-subtitle {
+      font-size: 0.75rem;
+    }
+    .description-container {
+      padding: 1rem;
+    }
+    .faucet-description {
+      font-size: 0.85rem;
+    }
+    .card {
+      padding: 1.5rem;
+      border-radius: 24px;
+    }
+    .how-it-works, .network-details, .token-box {
+      padding: 1.5rem;
+    }
+    .hiw-step {
+      min-height: 60px;
+    }
+    .step-visual {
+      width: 28px;
+    }
+    .step-icon-box {
+      width: 28px;
+      height: 28px;
+    }
+    .step-subtext {
+      font-size: 0.8rem;
+    }
+    .nd-row-compact {
+      flex-direction: column;
+    }
+    .balance-badge {
+      bottom: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+    }
+    .wallet-status {
+      padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+    }
+    .wallet-info .addr {
+      font-size: 0.75rem;
+    }
+    .addr-tooltip {
+      display: none;
+    }
+    .field.is-grouped {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .buttons-group .button {
+      width: 100%;
+    }
+    .rate-limit-policy {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1.5rem 0.5rem 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .faucet-title {
+      font-size: 1.5rem;
+    }
+    .token-feature-grid-compact {
+      grid-template-columns: 1fr;
+    }
+    .nav-glass-pill {
+      padding: 0.5rem 0.75rem;
+    }
+    .wallet-info .net {
+      display: none;
     }
   }
 
