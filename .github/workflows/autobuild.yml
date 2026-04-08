@@ -1,9 +1,9 @@
-name: Build and Push Docker Image on devnet push
+name: Build and Push Docker Image on devops push
 
 on:
   push:
     branches:
-      - devnet
+      - devops
 
 permissions:
   contents: write      
