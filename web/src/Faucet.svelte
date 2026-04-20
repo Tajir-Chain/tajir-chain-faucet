@@ -13,9 +13,11 @@
 
   let faucetInfo = {
     account: '0x0000000000000000000000000000000000000000',
-    network: 'testnet',
+    network: 'Devnet',
+    chain_id: '21519080',
+    rpc_url: 'https://rpc.devnet.tajirchain.com',
     payout: 1000000000,
-    symbol: 'ETH',
+    symbol: 'TJR',
     balance: '0',
     hcaptcha_sitekey: '',
     logo_url: '/logo.svg',
@@ -62,11 +64,23 @@
   }
 
   onMount(async () => {
-    const res = await fetch('/api/info');
-    console.log('Faucet Info Response:', res);
-    faucetInfo = await res.json();
-    console.log('Parsed Faucet Info:', faucetInfo);
-    mounted = true;
+    try {
+      const res = await fetch('/api/info');
+      if (res.ok) {
+        try {
+          const data = await res.json();
+          faucetInfo = { ...faucetInfo, ...data };
+        } catch (jsonErr) {
+          console.error('Failed to parse info JSON:', jsonErr);
+        }
+      } else {
+        console.error('Info API returned status:', res.status);
+      }
+    } catch (fetchErr) {
+      console.error('Failed to fetch info:', fetchErr);
+    } finally {
+      mounted = true;
+    }
   });
 
   window.hcaptchaOnLoad = () => {
@@ -157,8 +171,16 @@
         }),
       });
 
-      let { msg } = await res.json();
+      let msg = '';
       let ok = res.ok;
+      
+      try {
+        const data = await res.json();
+        msg = data.msg || (ok ? 'Success' : 'Request failed');
+      } catch (e) {
+        msg = ok ? 'Success (no detail)' : 'Error: Server returned invalid response';
+      }
+
       let type = ok ? 'is-success' : 'is-warning';
       if (!silenceToast) toast({ message: msg, type });
       return { ok, msg };
@@ -166,6 +188,10 @@
       console.error(err);
       return { ok: false, msg: err.message };
     }
+  }
+  function disconnectWallet() {
+    input = null;
+    toast({ message: 'Wallet Disconnected', type: 'is-success' });
   }
   function capitalize(str) {
     const lower = str.toLowerCase();
@@ -186,5 +212,5 @@
 {#if baseFrontendType}
   <BaseDesign {faucetInfo} {input} {handleRequest} {gweiToEth} />
 {:else if redesignFrontendType}
-  <Redesign {faucetInfo} {input} {handleRequest} {gweiToEth} {connectWallet} />
+  <Redesign {faucetInfo} {input} {handleRequest} {gweiToEth} {connectWallet} {disconnectWallet} />
 {/if}

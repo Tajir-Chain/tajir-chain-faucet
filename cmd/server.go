@@ -45,6 +45,7 @@ var (
 	explorerURLFlag     = flag.String("faucet.explorer", os.Getenv("EXPLORER_URL"), "Block explorer URL for the network")
 	bridgeURLFlag       = flag.String("faucet.bridge", os.Getenv("BRIDGE_URL"), "Bridge URL for the network")
 	websiteURLFlag      = flag.String("faucet.website", os.Getenv("WEBSITE_URL"), "Website URL for the network")
+	publicRPCFlag       = flag.String("faucet.publicrpc", getEnv("PUBLIC_RPC_URL", os.Getenv("WEB3_PROVIDER")), "Public RPC URL for the network")
 	twitterURLFlag      = flag.String("faucet.twitter", os.Getenv("TWITTER_URL"), "Twitter URL for the network")
 )
 
@@ -92,6 +93,8 @@ func Execute() {
 		*backgroundFlag,
 		*frontendTypeFlag,
 		*paidCustomerFlag,
+		*providerFlag,
+		*publicRPCFlag,
 		*mainnetProviderFlag,
 		*explorerURLFlag,
 		*bridgeURLFlag,
