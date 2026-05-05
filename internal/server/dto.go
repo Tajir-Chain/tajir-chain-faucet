@@ -18,6 +18,7 @@ type claimRequest struct {
 
 type claimResponse struct {
 	Message string `json:"msg"`
+	TTL     string `json:"ttl,omitempty"`
 }
 
 type infoResponse struct {

@@ -17,12 +17,13 @@
     chain_id: '21519080',
     rpc_url: 'https://rpc.devnet.tajirchain.com',
     payout: 1000000000,
-    symbol: 'TJR',
+    symbol: 'tTJR',
     balance: '0',
     hcaptcha_sitekey: '',
     logo_url: '/logo.svg',
     background_url: 'background.jpg',
     frontend_type: 'redesign',
+    public_rpc_url: 'https://rpc.devnet.tajirchain.com',
     paid_customer: false,
     bridge_url: 'https://bridge.devnet.tajirchain.com/',
     explorer_url: 'https://explorer.devnet.tajirchain.com/',
@@ -63,6 +64,133 @@
     return str;
   }
 
+  let userBalance = null;
+  let isWrongNetwork = false;
+  let showWalletModal = false;
+  let currentProvider = null;
+
+  async function getProvider(type) {
+    if (!window.ethereum && !window.phantom?.ethereum) return null;
+
+    if (type === 'metamask') {
+      // If multiple providers exist, look for MetaMask specifically
+      if (window.ethereum?.providers?.length) {
+        return window.ethereum.providers.find(p => p.isMetaMask && !p.isPhantom) || 
+               window.ethereum.providers.find(p => p.isMetaMask);
+      }
+      
+      // If window.ethereum is Phantom, and there's no other provider, 
+      // then MetaMask is either not installed or not exposed.
+      if (window.ethereum?.isPhantom && !window.ethereum?.isMetaMask) return null;
+      if (window.ethereum?.isPhantom && window.ethereum?.isMetaMask) {
+        // This is Phantom in compatibility mode. If we want REAL MetaMask, this isn't it.
+        // But we check if there are other providers.
+        return null; 
+      }
+
+      return window.ethereum?.isMetaMask ? window.ethereum : null;
+    }
+    
+    if (type === 'phantom') {
+      return window.phantom?.ethereum || (window.ethereum?.isPhantom ? window.ethereum : null);
+    }
+    
+    return window.ethereum;
+  }
+
+  async function checkNetwork(provider = currentProvider || window.ethereum) {
+    if (provider) {
+      try {
+        const chainId = await provider.request({ method: 'eth_chainId' });
+        isWrongNetwork = parseInt(chainId, 16).toString() !== faucetInfo.chain_id;
+        return !isWrongNetwork;
+      } catch (e) {
+        console.error("Failed to get chainId", e);
+      }
+    }
+    return false;
+  }
+
+  async function addNetwork(provider = currentProvider || window.ethereum) {
+    if (!provider) return;
+    const chainIdHex = '0x' + Number(faucetInfo.chain_id).toString(16);
+    try {
+      await provider.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: chainIdHex,
+          chainName: `Tajir ${capitalize(faucetInfo.network)}`,
+          rpcUrls: [faucetInfo.public_rpc_url],
+          nativeCurrency: {
+            name: 'Tajir',
+            symbol: faucetInfo.symbol,
+            decimals: 18,
+          },
+          blockExplorerUrls: [faucetInfo.explorer_url],
+        }],
+      });
+      return await checkNetwork(provider);
+    } catch (error) {
+      console.error("Failed to add network", error);
+      return false;
+    }
+  }
+
+  async function fetchUserBalance(address, provider = currentProvider || window.ethereum) {
+    if (provider && address) {
+      try {
+        const balance = await provider.request({
+          method: 'eth_getBalance',
+          params: [address, 'latest']
+        });
+        const wei = BigInt(balance);
+        const eth = Number(wei) / 1e18;
+        userBalance = eth.toFixed(4);
+      } catch (e) {
+        console.error("Failed to fetch balance", e);
+      }
+    }
+  }
+
+  async function connectWallet(type) {
+    const provider = await getProvider(type);
+    if (provider) {
+      currentProvider = provider;
+      try {
+        const isCorrectNetwork = await checkNetwork(provider);
+        if (!isCorrectNetwork) {
+          const added = await addNetwork(provider);
+          if (!added) {
+            toast({ message: 'Please switch to the correct network', type: 'is-warning' });
+            return;
+          }
+        }
+
+        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+        input = accounts[0];
+        await fetchUserBalance(input, provider);
+        toast({ message: 'Wallet Connected', type: 'is-success' });
+        showWalletModal = false;
+      } catch (error) {
+        toast({ message: error.message || 'Connection failed', type: 'is-warning' });
+      }
+    } else {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        const dappUrl = window.location.href.replace(/^https?:\/\//, '');
+        const metamaskAppDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+        window.open(metamaskAppDeepLink, '_blank');
+      } else {
+        toast({ message: `${capitalize(type || 'Wallet')} not found. Please install it to connect.`, type: 'is-warning' });
+      }
+    }
+  }
+
+  function openWalletModal() {
+    showWalletModal = true;
+  }
+
+
   onMount(async () => {
     try {
       const res = await fetch('/api/info');
@@ -80,12 +208,24 @@
       console.error('Failed to fetch info:', fetchErr);
     } finally {
       mounted = true;
+      if (window.ethereum) {
+        checkNetwork();
+        window.ethereum.on('chainChanged', () => {
+          checkNetwork();
+          if (input) fetchUserBalance(input);
+        });
+        window.ethereum.on('accountsChanged', (accounts) => {
+          if (accounts.length > 0) {
+            input = accounts[0];
+            fetchUserBalance(input);
+          } else {
+            input = null;
+            userBalance = null;
+          }
+        });
+      }
     }
   });
-
-  window.hcaptchaOnLoad = () => {
-    hcaptchaLoaded = true;
-  };
 
   window.hcaptchaOnLoad = () => {
     hcaptchaLoaded = true;
@@ -109,20 +249,6 @@
     closeOnClick: false,
     animate: { in: 'fadeIn', out: 'fadeOut' },
   });
-
-  async function connectWallet() {
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        input = accounts[0];
-        toast({ message: 'Wallet Connected', type: 'is-success' });
-      } catch (error) {
-        toast({ message: error.message || 'Connection failed', type: 'is-warning' });
-      }
-    } else {
-      toast({ message: 'MetaMask not found. Please install it to connect.', type: 'is-warning' });
-    }
-  }
 
   async function handleRequest(input, silenceToast = false) {
     let address = input;
@@ -183,6 +309,7 @@
 
       let type = ok ? 'is-success' : 'is-warning';
       if (!silenceToast) toast({ message: msg, type });
+      if (ok && input) fetchUserBalance(input);
       return { ok, msg };
     } catch (err) {
       console.error(err);
@@ -212,5 +339,17 @@
 {#if baseFrontendType}
   <BaseDesign {faucetInfo} {input} {handleRequest} {gweiToEth} />
 {:else if redesignFrontendType}
-  <Redesign {faucetInfo} {input} {handleRequest} {gweiToEth} {connectWallet} {disconnectWallet} />
+  <Redesign 
+    {faucetInfo} 
+    {input} 
+    {handleRequest} 
+    {gweiToEth} 
+    {connectWallet} 
+    {disconnectWallet} 
+    {userBalance} 
+    {isWrongNetwork} 
+    {addNetwork} 
+    bind:showWalletModal
+    {openWalletModal}
+  />
 {/if}

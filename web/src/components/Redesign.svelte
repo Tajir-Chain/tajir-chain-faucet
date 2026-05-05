@@ -8,6 +8,12 @@
   export let connectWallet;
   export let disconnectWallet;
 
+  export let userBalance;
+  export let isWrongNetwork;
+  export let addNetwork;
+  export let showWalletModal;
+  export let openWalletModal;
+
   function autoResize(event) {
     const textarea = event.target;
     textarea.style.height = 'auto'; // Reset height
@@ -66,50 +72,8 @@
     }
   }
 
-  let isWrongNetwork = false;
-  $: chainIdHex = faucetInfo.chain_id ? '0x' + Number(faucetInfo.chain_id).toString(16) : '';
-
-  async function checkNetwork() {
-    if (window.ethereum) {
-      try {
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        // Use case-insensitive comparison for hex chain IDs
-        isWrongNetwork = parseInt(chainId, 16).toString() !== faucetInfo.chain_id;
-      } catch (e) {
-        console.error("Failed to get chainId", e);
-      }
-    }
-  }
-
-  async function addNetwork() {
-    if (!window.ethereum) return;
-    try {
-      await window.ethereum.request({
-        method: 'wallet_addEthereumChain',
-        params: [{
-          chainId: chainIdHex,
-          chainName: `Tajir ${capitalize(faucetInfo.network)}`,
-          rpcUrls: [faucetInfo.public_rpc_url],
-          nativeCurrency: {
-            name: 'Tajir',
-            symbol: faucetInfo.symbol,
-            decimals: 18,
-          },
-          blockExplorerUrls: [faucetInfo.explorer_url],
-        }],
-      });
-      await checkNetwork();
-    } catch (error) {
-      console.error("Failed to add network", error);
-    }
-  }
-
   onMount(() => {
-    checkNetwork();
-    if (window.ethereum) {
-      window.ethereum.on('chainChanged', checkNetwork);
-      window.ethereum.on('accountsChanged', checkNetwork);
-    }
+    // Listeners are now handled in Faucet.svelte
   });
 
   let isMenuOpen = false;
@@ -135,9 +99,7 @@
     <nav class="navbar">
       <div class="nav-glass-pill">
         <div class="nav-left">
-          <a href="https://www.tajirchain.com/" class="logo-wrapper">
             <img src={faucetInfo.logo_url} alt="Tajir Logo" class="brand-logo" />
-          </a>
         </div>
 
         <div class="nav-center">
@@ -150,30 +112,19 @@
             </a>
           </div>
         </div>
-
-        <div class="nav-mobile-toggle">
-          <button class="btn-hamburger" on:click={toggleMenu} aria-label="Toggle Menu">
-            {#if isMenuOpen}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            {:else}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            {/if}
-          </button>
-        </div>
-
         <div class="nav-right">
           {#if !input}
-            <button on:click={connectWallet} class="btn-connect">
+            <button on:click={openWalletModal} class="btn-connect">
               Connect Wallet
             </button>
           {:else}
-            <div class="wallet-status">
+              <div class="wallet-status">
               <div class="wallet-info">
                 <div class="addr-wrapper">
                   <span class="addr">{shortenAddress(input)}</span>
                   <div class="addr-tooltip">{input}</div>
                 </div>
-                <span class="net">{capitalize(faucetInfo.network)}</span>
+                <span class="net">{capitalize(faucetInfo.network)} • {userBalance || '0'} {faucetInfo.symbol}</span>
               </div>
               
               {#if isWrongNetwork && window.ethereum}
@@ -192,6 +143,17 @@
             </div>
           {/if}
         </div>
+        <div class="nav-mobile-toggle">
+          <button class="btn-hamburger" on:click={toggleMenu} aria-label="Toggle Menu">
+            {#if isMenuOpen}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            {:else}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            {/if}
+          </button>
+        </div>
+
+        
       </div>
 
       {#if isMenuOpen}
@@ -199,20 +161,16 @@
           <div class="mobile-menu-content" on:click|stopPropagation>
             <div class="mobile-nav-links">
               <a href="https://www.tajirchain.com/" target="_blank" class="mobile-nav-link" on:click={toggleMenu}>
-                <span class="m-icon">🏠</span>
-                Official Website
+                Website
               </a>
               <a href={faucetInfo.explorer_url || "https://explorer.devnet.tajirchain.com/"} target="_blank" class="mobile-nav-link" on:click={toggleMenu}>
-                <span class="m-icon">🔍</span>
-                Block Explorer
+                Explorer
               </a>
               <a href={faucetInfo.bridge_url || "https://bridge.devnet.tajirchain.com/"} target="_blank" class="mobile-nav-link" on:click={toggleMenu}>
-                <span class="m-icon">🔗</span>
-                Token Bridge
+                Bridge
               </a>
               <a href="https://x.com/tajirchain?s=21" target="_blank" class="mobile-nav-link" on:click={toggleMenu}>
-                <span class="m-icon">𝕏</span>
-                Follow Twitter
+                Twitter
               </a>
             </div>
           </div>
@@ -224,7 +182,7 @@
       <div class="container">
         <div class="faucet-header has-text-centered">
           <h1 class="faucet-title">Tajir <span class="network-badge">{capitalize(faucetInfo.network)}</span> Faucet</h1>
-          <p class="faucet-subtitle">Get Free {faucetInfo.symbol} Tokens to test the Tajir blockchain</p>
+          <p class="faucet-subtitle">Get Free <span class="faucet-symbol">{faucetInfo.symbol}</span> Tokens to test the Tajir blockchain</p>
           <div class="description-container">
             <p class="faucet-description">
               {faucetInfo.symbol} is the native token of Tajir Blockchain. 
@@ -291,8 +249,13 @@
                   </div>
                   <h3 class="nd-title">Network Configuration</h3>
                 </div>
-                {#if isWrongNetwork}
-                  <span class="warning-badge">Wrong Network</span>
+                {#if isWrongNetwork && window.ethereum}
+                  <span class="warning-badge">
+                    Wrong Network 
+                    <button class="btn-add-chain" on:click={addNetwork} title="Add Tajir {capitalize(faucetInfo.network)}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                  </span>
                 {/if}
               </div>
 
@@ -480,6 +443,43 @@
     <div class="balance-badge">
       <span class="balance-value">{faucetInfo.balance} {faucetInfo.symbol}</span>
     </div>
+
+    {#if showWalletModal}
+      <div class="modal-overlay" on:click={() => showWalletModal = false}>
+        <div class="modal-content" on:click|stopPropagation>
+          <div class="modal-header">
+            <h3 class="modal-title">Select a Wallet</h3>
+            <button class="modal-close-btn" on:click={() => showWalletModal = false}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="wallet-options">
+            <button class="wallet-option" on:click={() => connectWallet('metamask')}>
+              <div class="wallet-icon-box metamask">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg" alt="MetaMask" />
+              </div>
+              <div class="wallet-details">
+                <span class="wallet-name">MetaMask</span>
+                <span class="wallet-desc">Connect using MetaMask extension</span>
+              </div>
+              <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <button class="wallet-option" on:click={() => connectWallet('phantom')}>
+              <div class="wallet-icon-box phantom">
+                <img src="https://phantom.com/_web_platform_assets/favicon-96x96.png" alt="Phantom" />
+              </div>
+              <div class="wallet-details">
+                <span class="wallet-name">Phantom</span>
+                <span class="wallet-desc">Connect using Phantom EVM</span>
+              </div>
+              <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <p class="modal-footer">By connecting a wallet, you agree to our Terms of Service.</p>
+        </div>
+      </div>
+    {/if}
   </section>
 </main>
 
@@ -524,6 +524,10 @@
     overflow: hidden;
     pointer-events: none;
     z-index: 0;
+  }
+
+  .faucet-symbol {
+    text-transform: none !important;
   }
 
   .mesh-overlay {
@@ -1044,11 +1048,14 @@
   }
 
   .warning-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-size: 0.65rem;
     font-weight: 800;
     background: #fff5eb;
     color: #f59e0b;
-    padding: 2px 8px;
+    padding: 2px 10px;
     border-radius: 100px;
     text-transform: uppercase;
     border: 1px solid rgba(245, 158, 11, 0.1);
@@ -1436,6 +1443,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    align-items: center;
   }
 
   .mobile-nav-link {
@@ -1536,7 +1544,7 @@
       order: 1;
     }
     .nav-mobile-toggle {
-      order: 2;
+      order: 3;
     }
     .brand-logo {
       height: 36px;
@@ -1664,5 +1672,155 @@
 
   .disconnect-icon-btn:hover {
     color: #ef4444;
+  }
+
+  /* Wallet Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 15, 26, 0.6);
+    backdrop-filter: blur(12px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .modal-content {
+    background: white;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 32px;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: slideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .modal-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--dark);
+    letter-spacing: -0.02em;
+  }
+
+  .modal-close-btn {
+    background: #f1f5f9;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--light-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .modal-close-btn:hover {
+    background: #e2e8f0;
+    color: var(--dark);
+    transform: rotate(90deg);
+  }
+
+  .wallet-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .wallet-option {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    width: 100%;
+    padding: 1.25rem;
+    background: #f8fafc;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    text-align: left;
+  }
+
+  .wallet-option:hover {
+    background: white;
+    border-color: var(--secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(57, 188, 159, 0.08);
+  }
+
+  .wallet-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+  }
+
+  .wallet-icon-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .wallet-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wallet-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 2px;
+  }
+
+  .wallet-desc {
+    font-size: 0.8rem;
+    color: var(--light-muted);
+    font-weight: 500;
+  }
+
+  .chevron {
+    color: #cbd5e1;
+    transition: transform 0.2s;
+  }
+
+  .wallet-option:hover .chevron {
+    color: var(--secondary);
+    transform: translateX(4px);
+  }
+
+  .modal-footer {
+    font-size: 0.75rem;
+    color: var(--light-muted);
+    text-align: center;
+    font-weight: 500;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
 </style>
