@@ -3,7 +3,7 @@ name: Devnet CI/CD Pipeline
 on:
   push:
     branches:
-      - devnet
+      - none
 
 jobs:
   build-and-push:
