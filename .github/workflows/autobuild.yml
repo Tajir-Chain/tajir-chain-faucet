@@ -54,18 +54,47 @@ jobs:
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "new_tag=tajir-$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Create and push git tag
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag ${{ steps.get_version.outputs.new_tag }}
-          git push origin ${{ steps.get_version.outputs.new_tag }}
-
-      - name: Build and push Docker image
+      # 1) Build + load (no push yet).
+      - name: Build image (load, no push)
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64  
+          platforms: linux/amd64
+          push: false
+          load: true
+          build-args: |
+            GIT_COMMIT_SHA=${{ github.sha }}
+            GIT_TAG=${{ steps.get_version.outputs.new_tag }}
+          tags: |
+            ${{ env.DOCKER_HUB_REPO }}:${{ steps.get_version.outputs.new_version }}
+            ${{ env.DOCKER_HUB_REPO }}:latest
+
+      - name: Install Trivy
+        run: |
+          TRIVY_VERSION=0.71.0
+          wget -qO /tmp/trivy.tar.gz \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          sudo tar -xzf /tmp/trivy.tar.gz -C /usr/local/bin trivy
+
+      # 2) GATE — fail the build here (before any push) on HIGH/CRITICAL.
+      - name: Trivy scan (blocks the push)
+        run: |
+          trivy image --severity HIGH,CRITICAL --scanners vuln --exit-code 1 \
+            "${{ env.DOCKER_HUB_REPO }}:${{ steps.get_version.outputs.new_version }}"
+
+      # Reached only when the scan is clean (the step above fails the job otherwise).
+      - name: Notify Slack (Trivy passed)
+        run: |
+          curl -sS -X POST -H 'Content-type: application/json' \
+            --data "{\"text\": \"✅ *${{ github.repository }}: Trivy scan passed* — no HIGH/CRITICAL. Pushing \`${{ env.DOCKER_HUB_REPO }}:${{ steps.get_version.outputs.new_version }}\`.\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}" || true
+
+      # 3) Push only if the scan passed (buildx reuses the build cache).
+      - name: Push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
           push: true
           build-args: |
             GIT_COMMIT_SHA=${{ github.sha }}
@@ -73,6 +102,14 @@ jobs:
           tags: |
             ${{ env.DOCKER_HUB_REPO }}:${{ steps.get_version.outputs.new_version }}
             ${{ env.DOCKER_HUB_REPO }}:latest
+
+      # 4) Tag only after a clean scan + push.
+      - name: Create and push git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.get_version.outputs.new_tag }}
+          git push origin ${{ steps.get_version.outputs.new_tag }}
 
       - name: Notify Slack (Success)
         if: success()
