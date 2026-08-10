@@ -160,6 +160,28 @@ jobs:
           build-args: |
             VERSION=${{ steps.version.outputs.new_tag }}
 
+      # ── Step 3.5: Trivy GATE — block the tag + push on HIGH/CRITICAL ─────────
+      - name: Install Trivy
+        if: steps.version.outputs.skip != 'true'
+        run: |
+          TRIVY_VERSION=0.71.0
+          wget -qO /tmp/trivy.tar.gz \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          sudo tar -xzf /tmp/trivy.tar.gz -C /usr/local/bin trivy
+
+      - name: Trivy scan (blocks tag + push)
+        if: steps.version.outputs.skip != 'true'
+        run: |
+          FIRST_TAG=$(echo "${{ steps.version.outputs.image_tags }}" | tr ',' '\n' | head -1)
+          trivy image --severity HIGH,CRITICAL --scanners vuln --exit-code 1 "$FIRST_TAG"
+
+      - name: Notify Slack (Trivy passed)
+        if: steps.version.outputs.skip != 'true'
+        run: |
+          curl -sS -X POST -H 'Content-type: application/json' \
+            --data "{\"text\": \"✅ *${{ github.repository }}: Trivy scan passed* — no HIGH/CRITICAL. Proceeding to tag + push \`${{ steps.version.outputs.new_tag }}\`.\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}" || true
+
       # ── Step 4: Create git tag (only if build succeeded) ────────────────────
       - name: Create git tag
         if: steps.version.outputs.skip != 'true'
@@ -172,12 +194,16 @@ jobs:
 
       # ── Step 5: Push Docker image (only if git tag succeeded) ───────────────
       - name: Push Docker image to DockerHub
+        id: push
         if: steps.version.outputs.skip != 'true'
         run: |
           echo "${{ steps.version.outputs.image_tags }}" | tr ',' '\n' | while read tag; do
             echo "Pushing $tag ..."
             docker push "$tag"
           done
+          FIRST_TAG=$(echo "${{ steps.version.outputs.image_tags }}" | tr ',' '\n' | head -1)
+          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$FIRST_TAG" | cut -d'@' -f2)
+          echo "image_digest=$DIGEST" >> $GITHUB_OUTPUT
 
       # ── Step 6: Create GitHub Release (mainnet only) ────────────────────────
       - name: Create GitHub Release
@@ -194,10 +220,11 @@ jobs:
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"🚀 <!channel> *Deployment Successful*\n\n\
+            \"text\": \"🚀 <!channel> *Image pushed to DockerHub - proceed with deployment!*\n\n\
             🧾 *Repo:* ${{ github.repository }}\n\
             🏷️ *Git Tag:* ${{ steps.version.outputs.new_tag }}\n\
             🐳 *Docker Image:* ${{ steps.version.outputs.image_tags }}\n\
+            🔑 *Image SHA:* ${{ steps.push.outputs.image_digest }}\n\
             🌿 *Branch:* ${{ github.base_ref }}\n\
             👤 *Triggered by:* ${{ github.actor }}\n\
             🔗 *Docker Hub:* https://hub.docker.com/r/${{ env.DOCKERHUB_IMAGE }}\"
