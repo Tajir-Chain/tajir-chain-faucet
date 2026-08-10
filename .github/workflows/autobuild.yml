@@ -76,11 +76,18 @@ jobs:
             "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
           sudo tar -xzf /tmp/trivy.tar.gz -C /usr/local/bin trivy
 
-      # 2) GATE — fail before any push on HIGH/CRITICAL.
+      # 2) GATE — fail the build here (before any push) on HIGH/CRITICAL.
       - name: Trivy scan (blocks the push)
         run: |
           trivy image --severity HIGH,CRITICAL --scanners vuln --exit-code 1 \
             "${{ env.DOCKER_HUB_REPO }}:${{ steps.get_version.outputs.new_version }}"
+
+      # Reached only when the scan is clean (the step above fails the job otherwise).
+      - name: Notify Slack (Trivy passed)
+        run: |
+          curl -sS -X POST -H 'Content-type: application/json' \
+            --data "{\"text\": \"✅ *${{ github.repository }}: Trivy scan passed* — no HIGH/CRITICAL. Pushing \`${{ env.DOCKER_HUB_REPO }}:${{ steps.get_version.outputs.new_version }}\`.\"}" \
+            "${{ secrets.SLACK_WEBHOOK_URL }}" || true
 
       # 3) Push only if the scan passed (buildx reuses the build cache).
       - name: Push image
