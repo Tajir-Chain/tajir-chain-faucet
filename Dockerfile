@@ -3,6 +3,9 @@ FROM node:lts-alpine AS frontend
 WORKDIR /frontend-build
 
 COPY web/package.json web/yarn.lock ./
+
+RUN apk add --no-cache yarn
+
 RUN yarn install
 
 COPY web ./
